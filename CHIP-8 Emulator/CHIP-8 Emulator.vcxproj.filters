@@ -21,7 +21,13 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\chip_8\Chip_8.cpp">
+    <ClCompile Include="src\cpu\CPU.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\display\Display.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\keyboard\Keyboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +35,13 @@
     <ClInclude Include="src\Emulator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\chip_8\Chip_8.h">
+    <ClInclude Include="src\cpu\CPU.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\display\Display.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\keyboard\Keyboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,20 +1,41 @@
 #ifndef CPU_H
 #define CPU_H
 #include <stdint.h>
+#include "../display/Display.h"
 
-class Chip_8
+#define print(x) std::cout << x;
+#define println(x) std::cout << x << std::endl;
+#define operror println("ERROR: Could not find opcode!")
+#define Vx(opcode) (uint8_t) ((opcode & 0x0f00) >> 8)
+#define Vy(opcode) (uint8_t) ((opcode & 0x00f0) >> 4)
+#define nibble(opcode) (uint8_t) (opcode & 0x000f)
+#define byte(opcode) (uint8_t) (opcode & 0x00ff)
+#define addr(opcode) (uint16_t) (opcode & 0x0fff)
+
+const uint8_t VF = 15;
+
+class CPU
 {
 public:
-	Chip_8();
+	bool drawFlag;
+	CPU(Display& display);
 	void init();
 	void cycle(); // Performs a cpu cycle
 	void debug();
-	void load(uint16_t size, uint8_t* buffer);
-	uint8_t read(uint16_t address); // Reads a single byte from memory
-	uint16_t read16(uint16_t address); // Reads 2 bytes from memory
-	void write(uint16_t address, uint8_t data); // Writes 1 byte in memory
-	void write16(uint16_t address, uint16_t data); // Writes 2 bytes in memory
-public:
+	uint8_t getV(int i);
+	void setV(int i, uint8_t value);
+	uint16_t getPC();
+	uint16_t getI();
+	uint8_t getSP();
+	uint16_t top();
+	uint16_t pop();
+	uint16_t push(uint16_t value);
+	void load(int size, char* buffer);
+	uint8_t readRAM(int address); // Reads a single byte from memory
+	uint16_t readRAM16(int address); // Reads 2 bytes from memory
+	void writeRAM(int address, uint8_t data); // Writes 1 byte in memory
+	void writeRAM16(int address, uint16_t data); // Writes 2 bytes in memory
+private:
 	uint8_t RAM[4096]; // Memory of 4KB
 
 	uint16_t incrementPC;
@@ -32,7 +53,9 @@ public:
 	uint8_t delayTimer;
 	uint8_t soundTimer;
 
-	typedef void (Chip_8::*Instruction)(uint16_t);
+	Display& display;
+
+	typedef void (CPU::*Instruction)(uint16_t);
 
 	Instruction instruction = nullptr;
 
@@ -189,27 +212,100 @@ public:
 	 * the interpreter generates a random number from 0 to 255,
 	 * which is then ANDed with the value kk.*/
 	void rnd(uint16_t opcode); 
+
+	/*Dxyn - DRW Vx, Vy, nibble
+	 * Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+	 * The interpreter reads n bytes from memory, starting at the address 
+	 * stored in I. These bytes are then displayed as sprites on screen 
+	 * at coordinates (Vx, Vy). Sprites are XORed onto the existing screen. If this causes any pixels 
+	 * to be erased, VF is set to 1, otherwise it is set to 0. 
+	 * If the sprite is positioned so part of it is outside the coordinates
+	 * of the display, it wraps around to the opposite side of the screen.*/
 	void drw(uint16_t opcode); 
-	void skp(uint16_t opcode); 
+
+	/*Ex9E - SKP Vx
+	 * Skip next instruction if key with the value of Vx is pressed.
+	 * 
+	 * Checks the keyboard, and if the key corresponding to the value 
+	 * of Vx is currently in the down position, PC is increased by 2.*/
+	void skp(uint16_t opcode);
+
+	/*ExA1 - SKNP Vx
+	 * Skip next instruction if key with the value of Vx is not pressed.
+	 * 
+	 * Checks the keyboard, and if the key corresponding to the value of Vx 
+	 * is currently in the up position, PC is increased by 2.*/
 	void sknp(uint16_t opcode); 
+	
+	/*Fx07 - LD Vx, DT
+	 * Set Vx = delay timer value.
+	 * 
+	 * The value of DT is placed into Vx.*/
+	void ldvdt(uint16_t opcode); 
+
+	/*Fx0A - LD Vx, K
+	 * Wait for a key press, store the value of the key in Vx.
+	 * 
+	 * All execution stops until a key is pressed,
+	 * then the value of that key is stored in Vx.*/
+	void ldkey(uint16_t opcode); 
+
+	/*Fx15 - LD DT, Vx
+	 * Set delay timer = Vx.
+	 * 
+	 * DT is set equal to the value of Vx.*/
+	void lddtv(uint16_t opcode); 
+
+	/*Fx18 - LD ST, Vx
+	 * Set sound timer = Vx.
+	 * 
+	 * ST is set equal to the value of Vx.*/
+	void ldst(uint16_t opcode);
+
+	/*Fx1E - ADD I, Vx
+	 * Set I = I + Vx.
+	 * 
+	 * The values of I and Vx are added, and the results are stored in I.*/
+	void addI(uint16_t opcode); 
+
+	/*Fx29 - LD F, Vx
+	 * Set I = location of sprite for digit Vx.
+	 * 
+	 * The value of I is set to the location for the 
+	 * hexadecimal sprite corresponding to the value of Vx.*/
+	void ldf(uint16_t opcode); 
+
+	/*Fx33 - LD B, Vx
+	 * Store BCD representation of Vx in memory locations I, I+1, and I+2.
+	 * 
+	 * The interpreter takes the decimal value of Vx, and places the hundreds digit in memory at location in I, 
+	 * the tens digit at location I+1, and the ones digit at location I+2.*/
+	void ldbcd(uint16_t opcode); 
+
+	/*Fx55 - LD [I], Vx
+	 * Store registers V0 through Vx in memory starting at location I.
+	 * 
+	 * The interpreter copies the values of registers V0 through Vx 
+	 * into memory, starting at the address in I.*/
+	void ldIv(uint16_t opcode); 
+
+	/*Fx65 - LD Vx, [I]
+	 * Read registers V0 through Vx from memory starting at location I.
+	 * 
+	 * The interpreter reads values from memory starting at location I 
+	 * into registers V0 through Vx.*/
+	void ldvI(uint16_t opcode); 
 
 
-
-	void ldvdt(uint16_t opcode); /*fx07 LD Vx, DT*/
-	void ldkey(uint16_t opcode); /*fx0a LD Vx, K*/
-	void lddtv(uint16_t opcode); /*fx15 LD DT, Vx*/
-	void ldst(uint16_t opcode); /*fx18 LD ST, Vx*/
-	void addI(uint16_t opcode); /*fx1e ADD I, Vx*/
-	void ldf(uint16_t opcode); /*fx29 LD F, Vx*/
-	void ldbcd(uint16_t opcode); /*fx33 LD B, Vx*/
-	void ldIv(uint16_t opcode); /*fx55 LD [I], Vx*/
-	void ldvI(uint16_t opcode); /*fx65 LD Vx, [I]*/
+	/* Decoding */
 
 	void decode(uint16_t opcode);
 	void switch0(uint16_t opcode);
 	void switch8(uint16_t opcode);
 	void switche(uint16_t opcode);
 	void switchf(uint16_t opcode);
+
+	void loadFont();
 
 };
 

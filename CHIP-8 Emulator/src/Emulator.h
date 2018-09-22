@@ -1,16 +1,19 @@
 #ifndef EMULATOR_H
 #define EMULATOR_H
-#include "chip_8/Chip_8.h"
+#include "cpu/CPU.h"
+#include "display/Display.h"
 
 class Emulator
 {
 private:
-	Chip_8* chip;
+	Display* display;
+	CPU* cpu;
 	bool running = false;
+	void run();
 public:
 	Emulator();
 	~Emulator();
-	void loadFile(char* file);
+	void loadFile(char* filename);
 	void start();
 	void stop();
 };

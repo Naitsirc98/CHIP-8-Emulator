@@ -1,17 +1,14 @@
-#include "Emulator.h"
-#include <iostream>
+#include "../src/Emulator.h"
 
-int main()
+
+int main(int argc, char* args[])
 {
 
 	Emulator e;
 
-	e.loadFile("");
+	e.loadFile("...");
 
 	e.start();
 
-	e.stop();
-
-	system("pause");
-
+	return 0;
 }
