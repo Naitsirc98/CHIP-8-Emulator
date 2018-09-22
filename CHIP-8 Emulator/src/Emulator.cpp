@@ -15,8 +15,13 @@ void Emulator::run()
 
 		display->handleEvents(running);
 		cpu->cycle();
-		display->render();
-
+		
+		if(cpu->drawFlag)
+		{
+			display->render();
+			cpu->drawFlag = false;
+		}
+		
 	}
 
 }
@@ -109,6 +114,5 @@ void Emulator::start()
 {
 	running = true;
 	display->init(title.c_str());
-	display->render();
 	run();
 }

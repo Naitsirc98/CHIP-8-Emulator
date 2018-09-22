@@ -9,7 +9,7 @@
 #define WIDTH 64
 #define HEIGHT 32
 #define BUFFER_SIZE WIDTH*HEIGHT 
-#define DELTA_TIME 16.6667f
+#define DELTA_TIME 1
 
 
 class Display
@@ -17,7 +17,7 @@ class Display
 private:
 	SDL_Window* window;
 	SDL_Surface* screen;
-	float nextFrame;
+	int nextFrame;
 	uint8_t pixels[BUFFER_SIZE];
 public:
 	Display();

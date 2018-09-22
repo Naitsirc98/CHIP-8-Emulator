@@ -43,11 +43,6 @@ void CPU::init()
 
 	loadFont();
 
-	for(int i = 0; i < 80; i++)
-	{
-		std::cout << i << " = " << std::hex << (int) readRAM(i) << std::endl;
-	}
-
 	srand(time(NULL));
 }
 
@@ -156,8 +151,6 @@ void CPU::cycle()
 	incrementPC = 2;
 
 	uint16_t opcode = readRAM16(pc);
-
-	std::cout << "opcode = " << std::hex << opcode << std::endl;
 
 	decode(opcode);
 

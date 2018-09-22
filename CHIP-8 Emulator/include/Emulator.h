@@ -8,7 +8,7 @@ class Emulator
 private:
 	Display* display;
 	CPU* cpu;
-	std::string title = "CHIP-8 Emulator by Naitsirc98. Exectuting ";
+	std::string title = "CHIP-8 Emulator by Naitsirc98. Executing ";
 	bool running = false;
 	void run();
 	void createTitle(char* filename);
