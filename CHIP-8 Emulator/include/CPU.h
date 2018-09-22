@@ -1,22 +1,14 @@
 #ifndef CPU_H
 #define CPU_H
 #include <stdint.h>
-#include "../display/Display.h"
-
-#define print(x) std::cout << x;
-#define println(x) std::cout << x << std::endl;
-#define operror println("ERROR: Could not find opcode!")
-#define Vx(opcode) (uint8_t) ((opcode & 0x0f00) >> 8)
-#define Vy(opcode) (uint8_t) ((opcode & 0x00f0) >> 4)
-#define nibble(opcode) (uint8_t) (opcode & 0x000f)
-#define byte(opcode) (uint8_t) (opcode & 0x00ff)
-#define addr(opcode) (uint16_t) (opcode & 0x0fff)
+#include "Display.h"
 
 const uint8_t VF = 15;
 
 class CPU
 {
 public:
+	const int CLOCK_HZ = 60;
 	bool drawFlag;
 	CPU(Display& display);
 	void init();

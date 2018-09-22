@@ -2,20 +2,27 @@
 #define DISPLAY_H
 #include <stdint.h>
 #include <SDL.h>
+#include <string>
+
+
+#define SCALE 16
+#define WIDTH 64
+#define HEIGHT 32
+#define BUFFER_SIZE WIDTH*HEIGHT 
+#define DELTA_TIME 16.6667f
+
 
 class Display
 {
-public:
-	static const int SCREEN_SIZE = 64 * 32;
 private:
 	SDL_Window* window;
-	SDL_Renderer* renderer;
 	SDL_Surface* screen;
-	uint8_t pixels[SCREEN_SIZE];
+	float nextFrame;
+	uint8_t pixels[BUFFER_SIZE];
 public:
 	Display();
 	~Display();
-	void init();
+	void init(const char* title);
 	void quit();
 	void clear();
 	uint8_t& operator[](int i);

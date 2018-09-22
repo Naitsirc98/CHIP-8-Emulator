@@ -21,27 +21,27 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\cpu\CPU.cpp">
+    <ClCompile Include="src\CPU.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\display\Display.cpp">
+    <ClCompile Include="src\Display.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\keyboard\Keyboard.cpp">
+    <ClCompile Include="src\Keyboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Emulator.h">
+    <ClInclude Include="include\Emulator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\cpu\CPU.h">
+    <ClInclude Include="include\CPU.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\display\Display.h">
+    <ClInclude Include="include\Display.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\keyboard\Keyboard.h">
+    <ClInclude Include="include\Keyboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

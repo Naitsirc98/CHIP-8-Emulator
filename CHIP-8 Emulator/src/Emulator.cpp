@@ -3,21 +3,42 @@
 #include <stdlib.h>
 #include <fstream>
 #include <iostream>
+#include <time.h>
 
 extern int errno;
 
 void Emulator::run()
 {
+
 	while(running)
 	{
+
 		display->handleEvents(running);
 		cpu->cycle();
-		if(cpu->drawFlag)
-		{
-			display->render();
-		}
+		display->render();
+
 	}
 
+}
+
+void Emulator::createTitle(char * filename)
+{
+	std::string romName(filename);
+
+	const size_t last_slash_idx = romName.find_last_of("\\/");
+	if(std::string::npos != last_slash_idx)
+	{
+		romName.erase(0, last_slash_idx + 1);
+	}
+
+	// Remove extension if present.
+	const size_t period_idx = romName.rfind('.');
+	if(std::string::npos != period_idx)
+	{
+		romName.erase(period_idx);
+	}
+
+	title.append(romName);
 }
 
 Emulator::Emulator()
@@ -55,8 +76,6 @@ void Emulator::loadFile(char* filename)
 
 	std::streampos size = fsize(file);
 
-	std::cout << size << std::endl;
-
 	if(size > (4096 - 512))
 	{
 		std::cout << "Not enough memory error" << std::endl;
@@ -81,18 +100,15 @@ void Emulator::loadFile(char* filename)
 	cpu->load(size, buffer);
 
 	delete[] buffer;
+
+	createTitle(filename);
+
 }
 
 void Emulator::start()
 {
 	running = true;
-	cpu->init();
-	display->init();
+	display->init(title.c_str());
 	display->render();
 	run();
-}
-
-void Emulator::stop()
-{
-	running = false;
 }

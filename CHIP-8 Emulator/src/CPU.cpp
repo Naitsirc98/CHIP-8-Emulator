@@ -1,7 +1,16 @@
-#include "CPU.h"
 #include <iostream>
 #include <time.h>
-#include "../keyboard/Keyboard.h"
+#include "CPU.h"
+#include "Keyboard.h"
+
+#define print(x) std::cout << x;
+#define println(x) std::cout << x << std::endl;
+#define operror println("ERROR: Could not find opcode!")
+#define Vx(opcode) (uint8_t) ((opcode & 0x0f00) >> 8)
+#define Vy(opcode) (uint8_t) ((opcode & 0x00f0) >> 4)
+#define nibble(opcode) (uint8_t) (opcode & 0x000f)
+#define byte(opcode) (uint8_t) (opcode & 0x00ff)
+#define addr(opcode) (uint16_t) (opcode & 0x0fff)
 
 
 CPU::CPU(Display& display) : display(display)
@@ -19,16 +28,25 @@ void CPU::init()
 	soundTimer = 0;
 	instruction = nullptr;
 	incrementPC = 2;
-	drawFlag = false;
+	drawFlag = true;
 
+	memset(RAM, 0, 4096);
+
+	Keyboard& keyboard = Keyboard::getKeyboard();
 
 	for(int i = 0; i < 16; i++)
 	{
 		registers[i] = 0;
 		stack[i] = 0;
+		keyboard[i] = 0;
 	}
 
 	loadFont();
+
+	for(int i = 0; i < 80; i++)
+	{
+		std::cout << i << " = " << std::hex << (int) readRAM(i) << std::endl;
+	}
 
 	srand(time(NULL));
 }
@@ -127,24 +145,38 @@ void CPU::load(int size, char * buffer)
 
 }
 
+
 void CPU::cycle()
 {
+	static int c = 0;
+
+	// print("cycle ");
+	// println(c++);
+
 	incrementPC = 2;
 
 	uint16_t opcode = readRAM16(pc);
 
-	//print("opcode = ");
-	// std::cout << std::hex << opcode << std::endl;
+	std::cout << "opcode = " << std::hex << opcode << std::endl;
 
 	decode(opcode);
 
 	(this->*instruction)(opcode);
 
+	if(incrementPC == 0xf) // Skip cycle
+		return;
+
 	if(delayTimer > 0)
 		delayTimer--;
 	
 	if(soundTimer > 0)
+	{
+		if(soundTimer == 1)
+		{
+			println("BEEP\7");
+		}
 		soundTimer--;
+	}
 
 	pc += incrementPC;
 }
@@ -191,7 +223,7 @@ void CPU::ret(uint16_t opcode)
 
 void CPU::jp(uint16_t opcode)
 {
-	pc = opcode & 0xfff;
+	pc = addr(opcode);
 	incrementPC = 0;
 }
 
@@ -273,8 +305,8 @@ void CPU::sub(uint16_t opcode)
 
 void CPU::shr(uint16_t opcode)
 {
-	uint8_t vx = registers[Vx(opcode)] >>= 1;
-	registers[VF] = vx & 0x000f;
+	registers[VF] = registers[Vx(opcode)] & 0x1;
+	registers[Vx(opcode)] >>= 1;
 }
 
 void CPU::subn(uint16_t opcode)
@@ -287,14 +319,15 @@ void CPU::subn(uint16_t opcode)
 
 void CPU::shl(uint16_t opcode)
 {
-	uint8_t vx = registers[Vx(opcode)] <<= 1;
-	registers[VF] = (vx & 0xf000) >> 12;
+	registers[VF] = (registers[Vx(opcode)]) >> 7;
+	registers[Vx(opcode)] <<= 1;
 }
 
 void CPU::snev(uint16_t opcode)
 {
-	incrementPC = registers[Vx(opcode)] != registers[Vy(opcode)] ?
-		2 : 1;
+	incrementPC = registers[Vx(opcode)] != registers[Vy(opcode)]
+		? 4 
+		: 2;
 }
 
 void CPU::ldI(uint16_t opcode)
@@ -310,33 +343,33 @@ void CPU::jpv0(uint16_t opcode)
 
 void CPU::rnd(uint16_t opcode)
 {
-	uint8_t random = rand() % 256;
+	uint8_t random = rand() % 0xff;
 	registers[Vx(opcode)] = random & byte(opcode);
 }
 
 void CPU::drw(uint16_t opcode)
 {
+
 	uint8_t x = registers[Vx(opcode)]; 
 	uint8_t y = registers[Vy(opcode)];
 
 	registers[VF] = 0; 
 
-	for(int yy = 0; yy < nibble(opcode); yy++)
+	for(int yLine = 0; yLine < nibble(opcode); yLine++)
 	{
-		uint8_t pixel = readRAM(I + yy);
+		uint8_t pixel = readRAM(I + yLine);
 
-		// Each pixel is 8 bits long, so loop through
-		for(int xx = 0; xx < 0x8; xx++)
+		for(int xLine = 0; xLine < 8; xLine++)
 		{
-			if((pixel & (0x80 >> xx)) != 0)
+			if((pixel & (0x80 >> xLine)) != 0)
 			{
 
-				if(display[x + xx + ((y + yy) * 64)] == 1)
+				if(display[x + xLine + ((y + yLine) * 64)] == 1)
 				{
 					registers[VF] = 1; // Collision
 				}
 					
-				display[x + xx + ((y + yy) * 64)] ^= 1;
+				display[x + xLine + ((y + yLine) * 64)] ^= 1;
 			}
 		}
 	}
@@ -345,7 +378,8 @@ void CPU::drw(uint16_t opcode)
 
 void CPU::skp(uint16_t opcode)
 {
-	if(getKey(registers[Vx(opcode)]) == 1)
+	
+	if(Keyboard::getKeyboard()[registers[Vx(opcode)]] != 0)
 	{
 		incrementPC = 4;
 	}
@@ -353,7 +387,8 @@ void CPU::skp(uint16_t opcode)
 
 void CPU::sknp(uint16_t opcode)
 {
-	if(getKey(registers[Vx(opcode)]) == 0)
+	
+	if(Keyboard::getKeyboard()[registers[Vx(opcode)]] == 0)
 	{
 		incrementPC = 4;
 	}
@@ -366,15 +401,15 @@ void CPU::ldvdt(uint16_t opcode)
 
 void CPU::ldkey(uint16_t opcode)
 {
-	int key = getKeyPressed();
+	int key = Keyboard::getKeyboard().anyKeyPressed();
 
 	if(key == -1)
 	{
-		incrementPC = 0;
+		incrementPC = 0xf;
 	}
 	else
 	{
-		registers[Vx(opcode)] = (uint8_t)key;
+		registers[Vx(opcode)] = (uint8_t) key;
 	}
 }
 
@@ -390,17 +425,21 @@ void CPU::ldst(uint16_t opcode)
 
 void CPU::addI(uint16_t opcode)
 {
-	I += registers[Vx(opcode)];
+	uint8_t x = registers[Vx(opcode)];
+	registers[VF] = I + x > 0xfff ? 1 : 0;
+	I += x;
 }
 
 void CPU::ldf(uint16_t opcode)
 {
-	I = registers[Vx(opcode)] * 0x5;
+	std::cout << "V[" <<(int) Vx(opcode) << "] = " << (int) registers[Vx(opcode)] << std::endl;
+	I = registers[Vx(opcode)] * 5;
+	std::cout << std::hex << (int)I << std::endl;
 }
 
 void CPU::ldbcd(uint16_t opcode)
 {
-	uint8_t vx = Vx(opcode);
+	uint8_t vx = registers[Vx(opcode)];
 	writeRAM(I, vx / 100);
 	writeRAM(I + 1, (vx / 10) % 10);
 	writeRAM(I + 2, (vx % 100) % 10);
@@ -408,18 +447,20 @@ void CPU::ldbcd(uint16_t opcode)
 
 void CPU::ldIv(uint16_t opcode)
 {
-	for(int i = 0; i < Vx(opcode); i++)
+	for(int i = 0; i <= Vx(opcode); i++)
 	{
 		writeRAM(I+i, registers[i]);
 	}
+	I += Vx(opcode) + 1;
 }
 
 void CPU::ldvI(uint16_t opcode)
 {
-	for(int i = 0; i < Vx(opcode); i++)
+	for(int i = 0; i <= Vx(opcode); i++)
 	{
 		registers[i] = readRAM(I+i);
 	}
+	I += Vx(opcode) + 1;
 }
 
 
@@ -591,7 +632,7 @@ void CPU::switchf(uint16_t opcode)
 void CPU::loadFont()
 {
 
-	static uint8_t font[80] = 
+	static const uint8_t font[80] = 
 	{
 		0xF0, 0x90, 0x90, 0x90, 0xF0, //0
 		0x20, 0x60, 0x20, 0x20, 0x70, //1
@@ -613,7 +654,7 @@ void CPU::loadFont()
 
 	for(int i = 0;i < 80;i++)
 	{
-		writeRAM(i, font[i]);
+		RAM[i] = font[i];
 	}
 
 }

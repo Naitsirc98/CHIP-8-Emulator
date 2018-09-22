@@ -81,7 +81,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies/SDL2/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CHIP-8 Emulator/include;$(SolutionDir)Dependencies/SDL2/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies/SDL2/lib/x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -104,7 +104,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies/SDL2/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)CHIP-8 Emulator/include;$(SolutionDir)Dependencies/SDL2/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -128,16 +128,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\display\Display.h" />
-    <ClInclude Include="src\Emulator.h" />
-    <ClInclude Include="src\cpu\CPU.h" />
-    <ClInclude Include="src\keyboard\Keyboard.h" />
+    <ClInclude Include="include\Display.h" />
+    <ClInclude Include="include\Emulator.h" />
+    <ClInclude Include="include\CPU.h" />
+    <ClInclude Include="include\Keyboard.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\display\Display.cpp" />
+    <ClCompile Include="src\Display.cpp" />
     <ClCompile Include="src\Emulator.cpp" />
-    <ClCompile Include="src\cpu\CPU.cpp" />
-    <ClCompile Include="src\keyboard\Keyboard.cpp" />
+    <ClCompile Include="src\CPU.cpp" />
+    <ClCompile Include="src\Keyboard.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
