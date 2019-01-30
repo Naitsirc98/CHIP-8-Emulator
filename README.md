@@ -13,6 +13,5 @@ Also, Keyboard class keeps track of what key has been pressed/released and maps 
 Finally, the class Emulator manage all the previous classes to make them work together.
 
 
-I have based my work by following the Multigesture.net tutorial (http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/),
-Wikipedia and Cowgod's Chip-8 Technical Reference (http://devernay.free.fr/hacks/chip8/C8TECH10.HTM).
+I have followed the Multigesture.net tutorial (http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/), and I have looked for information on Wikipedia and Cowgod's Chip-8 Technical Reference (http://devernay.free.fr/hacks/chip8/C8TECH10.HTM).
 
