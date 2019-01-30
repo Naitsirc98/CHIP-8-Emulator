@@ -2,7 +2,7 @@
 
 A CHIP-8 Emulator written in modern C++. I used SDL2 for graphics.
 
-Instructions are not implemented within the switch statement but each one has it own function.
+Instructions are not implemented within the switch statement but each one has its own function.
 So, when the CPU object decodes the opcode, it gets a function pointer and executes it, making the code easy to read and debug.
 
 To separate the CPU with the graphics stuff, I implemented the SDL2 functionality into the Display class. Thus, graphics and logic are
